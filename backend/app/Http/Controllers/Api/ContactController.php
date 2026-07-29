@@ -5,11 +5,19 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ContactRequest;
 use App\Services\AIClient;
+use App\Services\EmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class ContactController extends Controller
 {
+    private EmailService $emailService;
+
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
+
     public function store(ContactRequest $request): JsonResponse
     {
         try {
@@ -22,19 +30,22 @@ class ContactController extends Controller
                 $validated['comment']
             );
 
-            Log::info('Новое обращение с формы', [
+            Log::info('New contact form submission', [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'phone' => $validated['phone'] ?? 'Не указан',
+                'phone' => $validated['phone'] ?? 'Not specified',
                 'comment' => $validated['comment'],
                 'category' => $analysis['category'],
                 'sentiment' => $analysis['sentiment'],
                 'ai_used' => $analysis['ai_used'],
             ]);
 
+            $this->emailService->sendOwnerEmail($validated, $analysis);
+            $this->emailService->sendUserEmail($validated, $analysis);
+
             return response()->json([
                 'success' => true,
-                'message' => 'Сообщение успешно получено',
+                'message' => 'Message received successfully',
                 'data' => [
                     'name' => $validated['name'],
                     'email' => $validated['email'],
@@ -46,15 +57,15 @@ class ContactController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            Log::error('Ошибка в форме обратной связи', [
+            Log::error('Contact form error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Внутренняя ошибка сервера',
-                'errors' => ['Пожалуйста, попробуйте позже']
+                'message' => 'Internal server error',
+                'errors' => ['Please try again later']
             ], 500);
         }
     }

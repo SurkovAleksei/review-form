@@ -15,6 +15,6 @@ class Config:
     @classmethod
     def validate(cls):
         if not cls.GIGACHAT_CREDENTIALS:
-            print("⚠️  WARNING: GIGACHAT_CREDENTIALS not set in .env")
+            print(" WARNING: GIGACHAT_CREDENTIALS not set in .env")
             return False
         return True
