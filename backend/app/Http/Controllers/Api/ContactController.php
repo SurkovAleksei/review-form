@@ -18,6 +18,7 @@ class ContactController extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? 'Не указан',
+                'comment' => $validated['comment'],
                 'comment_length' => strlen($validated['comment'])
             ]);
 
@@ -28,6 +29,7 @@ class ContactController extends Controller
                     'name' => $validated['name'],
                     'email' => $validated['email'],
                     'phone' => $validated['phone'] ?? null,
+                    'comment' => $validated['comment'],
                     'received_at' => now()->toISOString(),
                 ]
             ], 200);

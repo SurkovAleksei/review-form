@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class ContactRequest extends FormRequest
 {
@@ -19,7 +20,6 @@ class ContactRequest extends FormRequest
                 'string',
                 'min:2',
                 'max:100',
-                'regex:/^[a-zA-Zа-яА-Я\s\-]+$/u'
             ],
             'email' => [
                 'required',
@@ -29,7 +29,8 @@ class ContactRequest extends FormRequest
             'phone' => [
                 'required',
                 'string',
-                'max:20'
+                'max:20',
+                'regex:/^\+[0-9]{10,15}$/'
             ],
             'comment' => [
                 'required',
@@ -46,7 +47,6 @@ class ContactRequest extends FormRequest
             'name.required' => 'Поле "Имя" обязательно для заполнения',
             'name.min' => 'Имя должно содержать минимум 2 символа',
             'name.max' => 'Имя не должно превышать 100 символов',
-            'name.regex' => 'Имя может содержать только буквы и пробелы',
 
             'email.required' => 'Поле "Email" обязательно для заполнения',
             'email.email' => 'Введите корректный email адрес',
@@ -54,6 +54,7 @@ class ContactRequest extends FormRequest
 
             'phone.required' => 'Поле "Телефон" обязательно для заполнения',
             'phone.max' => 'Телефон не должен превышать 20 символов',
+            'phone.regex' => 'Телефон должен содержать 10-15 цифр и начинаться с +',
 
             'comment.required' => 'Поле "Сообщение" обязательно для заполнения',
             'comment.min' => 'Сообщение должно содержать минимум 10 символов',
@@ -64,11 +65,33 @@ class ContactRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'name' => trim(strip_tags($this->name)),
+            'name' => $this->sanitizeName($this->name),
             'email' => strtolower(trim($this->email)),
             'phone' => $this->sanitizePhone($this->phone),
             'comment' => trim(strip_tags($this->comment))
         ]);
+    }
+
+    private function sanitizeName(?string $name): ?string
+    {
+        if (empty($name)) {
+            return null;
+        }
+
+        $name = preg_replace('/<[^>]*>.*?<\/[^>]*>/', '', $name);
+
+        $name = strip_tags($name);
+
+        $name = trim($name);
+        $name = preg_replace('/\s+/', ' ', $name);
+
+        $name = preg_replace('/[^a-zA-Zа-яА-Я\s\-]/u', '', $name);
+
+        if (empty($name) || trim($name) === '') {
+            return null;
+        }
+
+        return $name;
     }
 
     private function sanitizePhone(?string $phone): ?string
@@ -88,5 +111,25 @@ class ContactRequest extends FormRequest
         }
 
         return $phone;
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            $name = $this->input('name');
+
+            if (empty($name)) {
+                $validator->errors()->add('name', 'Имя обязательно для заполнения');
+                return;
+            }
+
+            if (!preg_match('/^[a-zA-Zа-яА-Я\s\-]+$/u', $name)) {
+                $validator->errors()->add('name', 'Имя может содержать только буквы и пробелы');
+            }
+
+            if (strlen($name) < 2) {
+                $validator->errors()->add('name', 'Имя должно содержать минимум 2 символа');
+            }
+        });
     }
 }
