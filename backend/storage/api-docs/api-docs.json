@@ -1,0 +1,407 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Developer Portfolio API",
+        "version": "1.0.0",
+        "description": "API для формы обратной связи с AI-анализом",
+        "contact": {
+            "email": "surkovalex01@gmail.com"
+        }
+    },
+    "servers": [{
+            "url": "http://localhost:8000",
+            "description": "Local server (Laravel)"
+        },
+        {
+            "url": "http://localhost:5000",
+            "description": "Local server (AI Service)"
+        }
+    ],
+    "tags": [{
+            "name": "Contact",
+            "description": "Операции с формой обратной связи"
+        },
+        {
+            "name": "Health",
+            "description": "Проверка статуса API"
+        },
+        {
+            "name": "AI",
+            "description": "AI анализ текста"
+        }
+    ],
+    "paths": {
+        "/api/contact": {
+            "post": {
+                "summary": "Отправить сообщение",
+                "description": "Отправляет форму обратной связи с AI-анализом",
+                "tags": ["Contact"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["name", "email", "phone", "comment"],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 2,
+                                        "maxLength": 100,
+                                        "example": "Иван Петров"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 255,
+                                        "example": "ivan@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "minLength": 10,
+                                        "maxLength": 20,
+                                        "example": "+79001234567"
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "minLength": 10,
+                                        "maxLength": 5000,
+                                        "example": "Хочу заказать разработку сайта"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешно",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Message received successfully"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Иван Петров"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "ivan@example.com"
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "example": "+79001234567"
+                                                },
+                                                "comment": {
+                                                    "type": "string",
+                                                    "example": "Хочу заказать разработку сайта"
+                                                },
+                                                "analysis": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "category": {
+                                                            "type": "string",
+                                                            "enum": ["question", "proposal", "complaint", "other"],
+                                                            "example": "proposal"
+                                                        },
+                                                        "sentiment": {
+                                                            "type": "string",
+                                                            "enum": ["positive", "neutral", "negative"],
+                                                            "example": "positive"
+                                                        },
+                                                        "sentiment_score": {
+                                                            "type": "integer",
+                                                            "minimum": 0,
+                                                            "maximum": 10,
+                                                            "example": 8
+                                                        },
+                                                        "urgency": {
+                                                            "type": "integer",
+                                                            "minimum": 1,
+                                                            "maximum": 5,
+                                                            "example": 4
+                                                        },
+                                                        "auto_reply": {
+                                                            "type": "string",
+                                                            "example": "Здравствуйте, Иван! Спасибо за обращение..."
+                                                        },
+                                                        "key_topics": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "example": ["интернет-магазин", "разработка"]
+                                                        },
+                                                        "ai_used": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        },
+                                                        "fallback": {
+                                                            "type": "boolean",
+                                                            "example": false
+                                                        }
+                                                    }
+                                                },
+                                                "received_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2026-07-30T10:00:00.000000Z"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Поле \"Имя\" обязательно для заполнения"
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Превышен лимит запросов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Слишком много запросов"
+                                        },
+                                        "retry_after": {
+                                            "type": "integer",
+                                            "example": 3540
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/health": {
+            "get": {
+                "summary": "Проверка статуса API",
+                "tags": ["Health"],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-07-30T10:00:00.000000Z"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/analyze": {
+            "post": {
+                "summary": "AI анализ текста",
+                "description": "Анализирует текст через GigaChat",
+                "tags": ["AI"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["name", "email", "comment"],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Иван Петров"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "ivan@example.com"
+                                    },
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Хочу заказать разработку сайта"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешный анализ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "category": {
+                                                    "type": "string",
+                                                    "enum": ["question", "proposal", "complaint", "other"],
+                                                    "example": "proposal"
+                                                },
+                                                "sentiment": {
+                                                    "type": "string",
+                                                    "enum": ["positive", "neutral", "negative"],
+                                                    "example": "positive"
+                                                },
+                                                "sentiment_score": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 10,
+                                                    "example": 8
+                                                },
+                                                "urgency": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "maximum": 5,
+                                                    "example": 4
+                                                },
+                                                "auto_reply": {
+                                                    "type": "string",
+                                                    "example": "Здравствуйте, Иван! Спасибо за обращение..."
+                                                },
+                                                "key_topics": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": ["интернет-магазин", "разработка"]
+                                                },
+                                                "ai_used": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "fallback": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Невалидный запрос",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Missing fields: name, email, comment"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка AI сервиса",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "AI Service error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
