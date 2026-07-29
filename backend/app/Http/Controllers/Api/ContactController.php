@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ContactRequest;
+use App\Services\AIClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
@@ -14,12 +15,21 @@ class ContactController extends Controller
         try {
             $validated = $request->validated();
 
+            $aiClient = new AIClient();
+            $analysis = $aiClient->analyze(
+                $validated['name'],
+                $validated['email'],
+                $validated['comment']
+            );
+
             Log::info('Новое обращение с формы', [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? 'Не указан',
                 'comment' => $validated['comment'],
-                'comment_length' => strlen($validated['comment'])
+                'category' => $analysis['category'],
+                'sentiment' => $analysis['sentiment'],
+                'ai_used' => $analysis['ai_used'],
             ]);
 
             return response()->json([
@@ -30,6 +40,7 @@ class ContactController extends Controller
                     'email' => $validated['email'],
                     'phone' => $validated['phone'] ?? null,
                     'comment' => $validated['comment'],
+                    'analysis' => $analysis,
                     'received_at' => now()->toISOString(),
                 ]
             ], 200);

@@ -1,0 +1,7 @@
+Flask
+Flask-CORS
+python-dotenv
+pydantic
+pydantic-settings
+gigachat
+httpx
