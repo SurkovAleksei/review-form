@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+venv/
+__pycache__/
+*.pyc
+*.log
+storage/
+vendor/
+node_modules/
+.DS_Store
+Thumbs.db
