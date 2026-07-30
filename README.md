@@ -18,41 +18,45 @@ API для формы обратной связи с AI-анализом (GigaCh
 **Контейнеризация** Docker, Docker Compose
 **Web Server** Nginx 
 
-## ДОСТУПНЫЕ URL
-http://localhost:8080/index.html	Форма обратной связи (фронтенд)
-http://localhost:8080/api/health	Проверка статуса API
-http://localhost:8080/api/contact	Отправка формы	POST
-http://localhost:8080/api/documentation	Swagger документация
-http://localhost:8000/api/health	Проверка статуса API (прямой доступ)
-http://localhost:8000/api/contact	Отправка формы (прямой доступ)
-http://localhost:5000/health	Проверка статуса AI сервиса
-http://localhost:5000/analyze	AI анализ текста (Flask)
+## Доступные URL
+
+- http://localhost:8080/index.html - Форма обратной связи (фронтенд)
+- http://localhost:8080/api/health - Проверка статуса API
+- http://localhost:8080/api/contact - Отправка формы (POST)
+- http://localhost:8080/api/documentation - Swagger документация
+- http://localhost:8000/api/health - Проверка статуса API (прямой доступ)
+- http://localhost:8000/api/contact - Отправка формы (прямой доступ)
+- http://localhost:5000/health - Проверка статуса AI сервиса
+- http://localhost:5000/analyze - AI анализ текста (Flask)
 
 ## Для запуска
-1. Клонирование репозитория
-bash
+
+### 1. Клонирование репозитория
+
+```bash
 git clone https://github.com/SurkovAleksei/review-form.git
-cd review-form
+cd review-form'''
 
-2. Запуск через Docker 
-bash
-# Сборка и запуск всех контейнеров
+2. Запуск через Docker
+'''bash
 docker-compose up -d --build
-
-# Проверка статуса контейнеров
-docker-compose ps
+docker-compose ps'''
 
 3. Настройка .env файлов
-bash
-# Создайте .env файлы из примеров
+'''bash
 cp backend/.env.example backend/.env
-cp ai-model/.env.example ai-model/.env
+cp ai-model/.env.example ai-model/.env'''
 
-1. Заполните .env:
-Ключ от gigachat
-GIGACHAT_CREDENTIALS=your-credentials 
+4. Заполните .env
+Ключ GigaChat (ai-model/.env):
 
-Почту для отправки и получения
+env
+GIGACHAT_CREDENTIALS=your-credentials
+GIGACHAT_SCOPE=GIGACHAT_API_PERS
+GIGACHAT_MODEL=GigaChat-2
+Почта для отправки и получения (backend/.env):
+
+env
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password
 MAIL_FROM_ADDRESS=your-email@gmail.com
