@@ -35,17 +35,20 @@ API для формы обратной связи с AI-анализом (GigaCh
 
 ```bash
 git clone https://github.com/SurkovAleksei/review-form.git
-cd review-form```
+cd review-form
+```
 
 2. Запуск через Docker
 ```bash
 docker-compose up -d --build
-docker-compose ps```
+docker-compose ps
+```
 
 3. Настройка .env файлов
 ```bash
 cp backend/.env.example backend/.env
-cp ai-model/.env.example ai-model/.env```
+cp ai-model/.env.example ai-model/.env
+```
 
 4. Заполните .env
 Ключ GigaChat (ai-model/.env):
