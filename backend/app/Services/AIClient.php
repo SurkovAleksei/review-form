@@ -12,7 +12,7 @@ class AIClient
 
     public function __construct()
     {
-        $this->url = config('ai.service_url', 'http://localhost:5000');
+        $this->url = config('ai.service_url', 'http://ai-model:5000');
         $this->timeout = config('ai.timeout', 10);
     }
 

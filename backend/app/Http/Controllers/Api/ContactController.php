@@ -8,6 +8,7 @@ use App\Services\AIClient;
 use App\Services\EmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;   
 
 class ContactController extends Controller
 {
@@ -22,6 +23,22 @@ class ContactController extends Controller
     {
         try {
             $validated = $request->validated();
+
+            $rateKey = 'contact-form:' . strtolower($validated['email']);
+            $allowed = RateLimiter::attempt(
+                $rateKey,
+                $maxAttempts = 1,
+                fn () => true,
+                $decaySeconds = 3600
+            );
+
+            if (! $allowed) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Заявка уже отправлена. Повторная отправка возможна через час.',
+                    'retry_after_minutes' => 60,
+                ], 429);
+            }
 
             $aiClient = new AIClient();
             $analysis = $aiClient->analyze(
@@ -45,7 +62,7 @@ class ContactController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Message received successfully',
+                'message' => 'Сообщение успешно получено',
                 'data' => [
                     'name' => $validated['name'],
                     'email' => $validated['email'],
@@ -64,8 +81,8 @@ class ContactController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Internal server error',
-                'errors' => ['Please try again later']
+                'message' => 'Внутренняя ошибка сервера',
+                'errors' => ['Попробуйте позже']
             ], 500);
         }
     }

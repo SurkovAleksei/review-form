@@ -24,4 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, $request) {
+            if ($request->is('api/contact')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Заявка уже отправлена. Повторная отправка возможна через час.',
+                    'retry_after_minutes' => 60,
+                ], 429);
+            }
+        });
     })->create();
