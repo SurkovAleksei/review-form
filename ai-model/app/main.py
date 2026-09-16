@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from collections import defaultdict
 import logging
 import sys
 import os
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,14 +25,34 @@ if not Config.validate():
 
 ai_service = AIService()
 
+_request_log: dict = defaultdict(list)
+RATE_LIMIT_WINDOW = 3600
+RATE_LIMIT_MAX = 1        
+
+def _is_rate_limited(key: str) -> bool:
+    now = time.time()
+    _request_log[key] = [t for t in _request_log[key] if now - t < RATE_LIMIT_WINDOW]
+    if len(_request_log[key]) >= RATE_LIMIT_MAX:
+        return True
+    _request_log[key].append(now)
+    return False
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
     try:
         data = request.get_json()
-        
+
         if not data:
             return jsonify({'success': False, 'error': 'No data'}), 400
-        
+
+        key = (data.get('email') or request.remote_addr or 'unknown').lower()
+        if _is_rate_limited(key):
+            logger.warning(f"Rate limit exceeded for {key}")
+            return jsonify({
+                'success': False,
+                'error': 'Rate limit exceeded. Try again later.'
+            }), 429
+
         required = ['name', 'email', 'comment']
         missing = [f for f in required if f not in data]
         if missing:
@@ -38,17 +60,17 @@ def analyze():
                 'success': False,
                 'error': f'Missing fields: {", ".join(missing)}'
             }), 400
-        
+
         result = ai_service.analyze(
             data['name'],
             data['email'],
             data['comment']
         )
-        
+
         logger.info(f"Analysis: {result['category']}, AI: {result['ai_used']}, Fallback: {result['fallback']}")
-        
+
         return jsonify({'success': True, 'data': result})
-        
+
     except Exception as e:
         logger.error(f"Error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
