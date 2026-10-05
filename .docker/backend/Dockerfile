@@ -16,7 +16,8 @@ WORKDIR /var/www/backend
 
 COPY backend/ /var/www/backend
 
-RUN rm -f composer.lock && composer install --no-interaction --optimize-autoloader --no-dev
+RUN COMPOSER_REPO_PACKAGIST=https://mirrors.aliyun.com/composer/ \
+    composer install --no-interaction --optimize-autoloader --no-dev
 
 RUN chown -R www-data:www-data /var/www/backend/storage /var/www/backend/bootstrap/cache
 RUN chmod -R 775 /var/www/backend/storage /var/www/backend/bootstrap/cache

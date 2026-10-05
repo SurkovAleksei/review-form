@@ -109,7 +109,8 @@ class AIService:
     "key_topics": ["разработка сайта", "дизайн"],
     "auto_reply": "Здравствуйте, {name}! Спасибо за ваш интерес к нашему проекту. Мы используем современные технологии для создания таких сайтов. Я передал ваш запрос нашей команде, и мы скоро с вами свяжемся для обсуждения деталей!"
 }}
-"""import json
+"""
+import json
 import logging
 from typing import Dict, Any
 from ..config import Config

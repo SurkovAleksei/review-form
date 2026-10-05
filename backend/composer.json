@@ -5,6 +5,15 @@
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/"
+        },
+        {
+            "packagist.org": false
+        }
+    ],
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.8",
